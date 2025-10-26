@@ -1,0 +1,56 @@
+from fastapi import APIRouter, Depends, HTTPException, Request
+from sqlalchemy.orm import Session
+
+from app.database import get_db
+from app.services.payment_service import PaymentService
+from app.schemas.payment import TopupRequest, TopupResponse, MoMoIPNRequest
+from app.middleware.auth_middleware import get_current_user_id
+
+router = APIRouter(prefix="/api/payment", tags=["Payment"])
+
+
+@router.post("/topup", response_model=TopupResponse)
+async def create_topup(
+    topup_data: TopupRequest,
+    db: Session = Depends(get_db),
+    user_id: int = Depends(get_current_user_id)
+):
+    """Create MoMo payment for topup (requires authentication)"""
+    payment_service = PaymentService(db)
+    
+    try:
+        result = await payment_service.create_topup_payment(user_id, topup_data.amount)
+        return TopupResponse(
+            pay_url=result["pay_url"],
+            request_id=result["request_id"],
+            qr_code_url=result.get("qr_code_url")
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Payment creation failed: {str(e)}")
+
+
+@router.post("/momo/ipn")
+async def momo_ipn(request: Request, db: Session = Depends(get_db)):
+    """MoMo IPN callback endpoint (webhook)"""
+    payment_service = PaymentService(db)
+    
+    try:
+        ipn_data = await request.json()
+        success = payment_service.process_ipn(ipn_data)
+        
+        return {
+            "partnerCode": ipn_data.get("partnerCode"),
+            "requestId": ipn_data.get("requestId"),
+            "orderId": ipn_data.get("orderId"),
+            "resultCode": 0 if success else 1,
+            "message": "Success" if success else "Failed"
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"IPN processing failed: {str(e)}")
+
+
+
