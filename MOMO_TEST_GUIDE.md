@@ -138,7 +138,9 @@ curl -X GET "https://bot-detected.cersc.site/api/subscription/current" \
 - ✅ Nhập lại nếu sai
 
 ### Không nhận được tiền sau thanh toán
-- ✅ Check IPN URL có accessible không
+- ✅ Check ngrok đang chạy (`ngrok http 8000`)
+- ✅ Check IPN URL trong `.env` đúng với ngrok URL hiện tại
+- ✅ Xem ngrok web interface: `http://127.0.0.1:4040` để kiểm tra requests
 - ✅ Check logs server xem có nhận callback
 - ✅ Verify signature của IPN
 
@@ -148,6 +150,7 @@ curl -X GET "https://bot-detected.cersc.site/api/subscription/current" \
 
 ## 📚 Tài Liệu Tham Khảo
 
+- [Ngrok Setup Guide](NGROK_SETUP_GUIDE.md) - Hướng dẫn chi tiết setup ngrok
 - [MoMo Developers Portal](https://developers.momo.vn/)
 - [Test Instructions](https://developers.momo.vn/v3/vi/docs/payment/onboarding/test-instructions/)
 - [API Documentation](https://developers.momo.vn/v3/vi/docs/payment/api/wallet/onetime)

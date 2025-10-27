@@ -1,9 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
+import httpx
+import json
 
 from app.database import get_db
 from app.services.payment_service import PaymentService
-from app.schemas.payment import TopupRequest, TopupResponse, MoMoIPNRequest
+from app.schemas.payment import TopupRequest, TopupResponse
 from app.middleware.auth_middleware import get_current_user_id
 
 router = APIRouter(prefix="/api/payment", tags=["Payment"])
@@ -27,6 +29,10 @@ async def create_topup(
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except httpx.HTTPStatusError as e:
+        # Enhanced error for MoMo API errors
+        error_detail = f"MoMo API error: {e.response.status_code} - {e.response.text}"
+        raise HTTPException(status_code=500, detail=error_detail)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Payment creation failed: {str(e)}")
 
@@ -37,7 +43,14 @@ async def momo_ipn(request: Request, db: Session = Depends(get_db)):
     payment_service = PaymentService(db)
     
     try:
-        ipn_data = await request.json()
+        raw_body = await request.body()
+        raw_body_str = raw_body.decode('utf-8')
+        
+        # Handle empty body (health check)
+        if not raw_body_str.strip():
+            return {"resultCode": 0, "message": "IPN endpoint is ready"}
+        
+        ipn_data = json.loads(raw_body_str)
         success = payment_service.process_ipn(ipn_data)
         
         return {
@@ -47,10 +60,13 @@ async def momo_ipn(request: Request, db: Session = Depends(get_db)):
             "resultCode": 0 if success else 1,
             "message": "Success" if success else "Failed"
         }
+        
+    except json.JSONDecodeError:
+        return {"resultCode": 1, "message": "Invalid JSON"}
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        return {"resultCode": 1, "message": f"Validation failed: {str(e)}"}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"IPN processing failed: {str(e)}")
+        return {"resultCode": 1, "message": "Processing failed"}
 
 
 @router.get("/success")
@@ -78,5 +94,4 @@ async def payment_success_redirect(
             "message": f"Thanh toán thất bại: {message or 'Unknown error'}",
             "order_id": orderId,
             "result_code": resultCode
-        }
-
+        }    

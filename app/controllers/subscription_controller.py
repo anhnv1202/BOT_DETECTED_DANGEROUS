@@ -40,4 +40,19 @@ def purchase_plan(
         raise HTTPException(status_code=400, detail=str(e))
 
 
+@router.post("/cancel", response_model=SubscriptionResponse)
+def cancel_subscription(
+    db: Session = Depends(get_db),
+    user_id: int = Depends(get_current_user_id)
+):
+    """Cancel current subscription and downgrade to FREE (requires authentication)"""
+    subscription_service = SubscriptionService(db)
+    
+    try:
+        subscription = subscription_service.cancel_subscription(user_id)
+        return subscription
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
 

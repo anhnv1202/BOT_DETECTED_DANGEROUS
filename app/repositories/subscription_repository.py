@@ -26,9 +26,17 @@ class SubscriptionRepository:
         return self.db.query(Subscription).filter(Subscription.id == subscription_id).first()
     
     def get_active_by_user(self, user_id: int) -> Optional[Subscription]:
+        """
+        Get current active subscription for user
+        Includes CANCELLED subscriptions that haven't expired yet
+        """
+        from sqlalchemy import or_
         return self.db.query(Subscription).filter(
             Subscription.user_id == user_id,
-            Subscription.status == SubscriptionStatus.ACTIVE
+            or_(
+                Subscription.status == SubscriptionStatus.ACTIVE,
+                Subscription.status == SubscriptionStatus.CANCELLED
+            )
         ).order_by(Subscription.created_at.desc()).first()
     
     def get_all_by_user(self, user_id: int) -> List[Subscription]:
@@ -59,6 +67,14 @@ class SubscriptionRepository:
             self.db.commit()
             self.db.refresh(subscription)
         return subscription
+    
+    def bulk_update_status(self, subscription_ids: List[int], status: SubscriptionStatus) -> int:
+        """Bulk update status for multiple subscriptions"""
+        result = self.db.query(Subscription).filter(Subscription.id.in_(subscription_ids)).update(
+            {"status": status}, synchronize_session=False
+        )
+        self.db.commit()
+        return result
     
     def update(self, subscription: Subscription) -> Subscription:
         self.db.commit()

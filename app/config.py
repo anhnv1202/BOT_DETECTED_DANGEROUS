@@ -22,11 +22,11 @@ class Settings(BaseSettings):
     GOOGLE_REDIRECT_URI: str = "http://localhost:8000/api/auth/google/callback"
     
     # MoMo Payment
-    MOMO_PARTNER_CODE: str = ""
-    MOMO_ACCESS_KEY: str = ""
-    MOMO_SECRET_KEY: str = ""
+    MOMO_PARTNER_CODE: str = "MOMO"
+    MOMO_ACCESS_KEY: str = "F8BBA842ECF85"
+    MOMO_SECRET_KEY: str = "K951B6PE1waDMi640xX08PD3vg6EkVlz"
     MOMO_ENDPOINT: str = "https://test-payment.momo.vn/v2/gateway/api/create"
-    MOMO_REDIRECT_URL: str = "http://localhost:8000/payment/success"
+    MOMO_REDIRECT_URL: str = "http://localhost:8000/api/payment/success"
     MOMO_IPN_URL: str = "http://localhost:8000/api/payment/momo/ipn"
     
     # ML Model
