@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -43,18 +43,30 @@ def login(credentials: UserLogin, db: Session = Depends(get_db)):
     return Token(access_token=access_token)
 
 
-@router.post("/google", response_model=Token)
-async def google_auth(auth_request: GoogleAuthRequest, db: Session = Depends(get_db)):
-    """Authenticate with Google OAuth"""
+async def _handle_google_auth(code: str, db: Session) -> Token:
+    """Helper function to exchange Google auth code for token"""
     auth_service = AuthService(db)
-    
-    try:
-        user = await auth_service.google_login(auth_request.code)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Google authentication failed: {str(e)}")
-    
+    user = await auth_service.google_login(code)
     access_token = auth_service.create_access_token(user.id)
     return Token(access_token=access_token)
+
+
+@router.get("/google/callback", response_model=Token)
+async def google_auth_callback(code: str = Query(...), db: Session = Depends(get_db)):
+    """Handle Google OAuth callback (browser redirect)"""
+    try:
+        return await _handle_google_auth(code, db)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Google authentication failed: {str(e)}")
+
+
+@router.post("/google", response_model=Token)
+async def google_auth(auth_request: GoogleAuthRequest, db: Session = Depends(get_db)):
+    """Authenticate with Google OAuth (API client/mobile app)"""
+    try:
+        return await _handle_google_auth(auth_request.code, db)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Google authentication failed: {str(e)}")
 
 
 @router.get("/me", response_model=UserResponse)

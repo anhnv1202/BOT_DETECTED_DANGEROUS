@@ -119,10 +119,13 @@ docker run --rm -p 8000:8000 \
    - Đăng ký tài khoản business tại [MoMo Business](https://business.momo.vn/)
    - Liên hệ MoMo để lấy Partner Code, Access Key, Secret Key
    - Để test: Dùng credentials môi trường test của MoMo
-   - **Quan trọng**: IPN URL phải là domain công khai (dùng ngrok nếu test local)
+   - **Quan trọng**: IPN URL phải là domain công khai (dùng ngrok hoặc Cloudflare Tunnel)
      ```bash
-     # Ví dụ dùng ngrok
+     # Cách 1: Dùng ngrok
      ngrok http 8000
+     
+     # Cách 2: Dùng Cloudflare Tunnel (miễn phí, ổn định hơn)
+     cloudflared tunnel --url http://localhost:8000
      # Copy HTTPS URL vào MOMO_IPN_URL trong .env
      ```
 

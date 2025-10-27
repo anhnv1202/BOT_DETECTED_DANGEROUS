@@ -32,10 +32,8 @@ class Settings(BaseSettings):
     # ML Model
     MODEL_PATH: str = "mobilenetv2_dangerous_objects.pth"
     MODEL_IMG_SIZE: int = 224
-    # Cập nhật theo classes trong model đã train
-    # Nếu bạn biết các class, sửa ví dụ: ["gun", "knife", "fire", "blood"]
-    # Hoặc giữ ["0", "1", "2", "3"] nếu chưa rõ mapping
-    MODEL_CLASSES: list = ["gun", "knife", "fire", "blood"]  # Đoán các class nguy hiểm
+
+    MODEL_CLASSES: list = ["0", "1", "2", "3"]
     
     # Subscription Plans
     PLAN_FREE_MONTHLY_QUOTA: int = 100

@@ -53,4 +53,30 @@ async def momo_ipn(request: Request, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=f"IPN processing failed: {str(e)}")
 
 
+@router.get("/success")
+async def payment_success_redirect(
+    orderId: str,
+    requestId: str,
+    resultCode: int,
+    amount: int = None,
+    transId: int = None,
+    message: str = None
+):
+    """Redirect URL sau khi user thanh toán trên MoMo"""
+    if resultCode == 0:  # Success
+        return {
+            "status": "success",
+            "message": "Thanh toán thành công! Tiền đã được nạp vào ví.",
+            "order_id": orderId,
+            "request_id": requestId,
+            "amount": amount,
+            "transaction_id": transId
+        }
+    else:
+        return {
+            "status": "failed",
+            "message": f"Thanh toán thất bại: {message or 'Unknown error'}",
+            "order_id": orderId,
+            "result_code": resultCode
+        }
 
