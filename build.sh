@@ -31,11 +31,11 @@ echo "Logging in to Docker Hub..."
 echo "${DOCKER_PASSWORD}" | docker login --username "${DOCKER_USERNAME}" --password-stdin
 
 echo -e "[${GREEN}Building image...${NONE}]"
-docker build -t "${REPO}:prod" . -f Dockerfile
+docker build -t "${REPO}:cpu" . -f Dockerfile
 
 echo -e "[${GREEN}Pushing image...${NONE}]"
-docker push "${REPO}:prod"
+docker push "${REPO}:cpu"
 
-echo -e "[${GREEN}DONE${NONE}] Image pushed: ${REPO}:prod"
+echo -e "[${GREEN}DONE${NONE}] Image pushed: ${REPO}:cpu"
 
 

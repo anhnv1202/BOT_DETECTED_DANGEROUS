@@ -4,6 +4,8 @@ pydantic==2.9.2
 pydantic-settings==2.6.1
 email-validator==2.3.0
 pillow==10.4.0
+torch>=2.1.0,<3.0.0
+torchvision>=0.16.0,<1.0.0
 numpy>=1.25.0,<3.0.0
 sqlalchemy==2.0.36
 python-jose[cryptography]==3.3.0
@@ -12,7 +14,7 @@ httpx==0.27.2
 python-multipart==0.0.20
 
 # Use CPU-only PyTorch wheels to reduce image size
---index-url https://download.pytorch.org/whl/cpu
-torch==2.3.1+cpu
-torchvision==0.18.1+cpu
---extra-index-url https://pypi.org/simple
+# --index-url https://download.pytorch.org/whl/cpu
+# torch==2.3.1+cpu
+# torchvision==0.18.1+cpu
+# --extra-index-url https://pypi.org/simple

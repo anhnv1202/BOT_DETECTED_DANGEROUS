@@ -2,7 +2,8 @@ version: '3.8'
 
 services:
   api:
-    image: nvashinki/dangerous-objects-api:prod
+    # image: nvashinki/xdynamic-api:prod
+    image: nvashinki/xdynamic-api:cpu
     container_name: xdynamic-api
     restart: unless-stopped
     ports:
