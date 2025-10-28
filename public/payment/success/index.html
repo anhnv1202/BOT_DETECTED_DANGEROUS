@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Payment Result</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; margin: 32px; }
+    .wrap { max-width: 760px; margin: 0 auto; }
+    .status { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+    .ok { color: #059669; }
+    .fail { color: #dc2626; }
+    pre { background:#0b1020; color:#e5e7eb; padding:12px; border-radius:10px; overflow:auto; }
+    a.btn { display:inline-block; padding:10px 14px; border-radius:8px; border:1px solid #2563eb; background:#2563eb; color:#fff; text-decoration:none; }
+  </style>
+  <script>
+    function qs() { const p = new URLSearchParams(location.search); const o={}; for (const [k,v] of p) o[k]=v; return o; }
+    function render() {
+      const q = qs();
+      const ok = String(q.resultCode) === '0';
+      document.getElementById('status').textContent = ok ? 'Thanh toán thành công' : 'Thanh toán thất bại';
+      document.getElementById('status').className = 'status ' + (ok ? 'ok' : 'fail');
+      document.getElementById('params').textContent = JSON.stringify(q, null, 2);
+    }
+    window.addEventListener('DOMContentLoaded', render);
+  </script>
+</head>
+<body>
+  <div class="wrap">
+    <div id="status" class="status">...</div>
+    <pre id="params"></pre>
+    <p><a class="btn" href="/fe/">Về trang test</a></p>
+  </div>
+</body>
+</html>
+
+

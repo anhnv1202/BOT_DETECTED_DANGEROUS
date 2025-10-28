@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     APP_NAME: str = "Dangerous Objects AI API"
     APP_VERSION: str = "2.0.0"
     DEBUG: bool = False
+    APP_URL: str = "http://localhost:8000/fe"  # Frontend base URL to receive OAuth codes
     
     # Database
     DATABASE_URL: str = "sqlite:///./app.db"

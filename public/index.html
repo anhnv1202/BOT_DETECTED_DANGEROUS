@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FE Test - OAuth & MoMo</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; margin: 32px; }
+    .wrap { max-width: 880px; margin: 0 auto; }
+    h1 { margin: 0 0 8px; }
+    .muted { color:#6b7280; }
+    .card { border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; margin: 14px 0; }
+    label { display:block; font-weight:600; margin: 10px 0 6px; }
+    input { width: 100%; padding: 8px 10px; border:1px solid #d1d5db; border-radius:8px; }
+    a.btn, button { display:inline-block; padding:10px 14px; border-radius:8px; border:1px solid #2563eb; background:#2563eb; color:#fff; text-decoration:none; cursor:pointer; margin-top:10px; }
+    pre { background:#0b1020; color:#e5e7eb; padding:12px; border-radius:10px; overflow:auto; }
+  </style>
+  <script>
+    function qs() { const p = new URLSearchParams(location.search); const o={}; for (const [k,v] of p) o[k]=v; return o; }
+    function renderParams() { document.getElementById('params').textContent = JSON.stringify(qs(), null, 2) || '(none)'; }
+    function setApiBase() { document.getElementById('apiBase').value = 'http://localhost:8000'; }
+    function startGoogle() {
+      const clientId = document.getElementById('googleClientId').value.trim();
+      const redirectUri = document.getElementById('googleRedirectUri').value.trim();
+      const scope = encodeURIComponent('openid email profile');
+      const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${scope}&access_type=offline&prompt=consent`;
+      location.href = url;
+    }
+    async function exchangeCode() {
+      const code = (qs().code || document.getElementById('code').value).trim();
+      if (!code) { alert('Missing code'); return; }
+      const api = document.getElementById('apiBase').value.replace(/\/$/, '');
+      const res = await fetch(`${api}/api/auth/google`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ code }) });
+      const data = await res.json();
+      document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+    }
+    window.addEventListener('DOMContentLoaded', () => { setApiBase(); renderParams(); });
+  </script>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Frontend Test</h1>
+    <p class="muted">Trang FE giả lập để nhận redirect từ Google/MoMo.</p>
+
+    <div class="card">
+      <h2>1) Settings</h2>
+      <label>Backend API Base</label>
+      <input id="apiBase" placeholder="http://localhost:8000" />
+      <label>Google Client ID</label>
+      <input id="googleClientId" value="569715235327-o7kefcrh934pelqg57akn4jnrq63rpi9.apps.googleusercontent.com" placeholder="your-client-id.apps.googleusercontent.com" />
+      <label>Google Redirect URI</label>
+      <input id="googleRedirectUri" value="http://localhost:8000/api/auth/google/callback" />
+      <button onclick="startGoogle()">Start Google OAuth</button>
+    </div>
+
+    <div class="card">
+      <h2>2) Current Query Params</h2>
+      <pre id="params"></pre>
+    </div>
+
+    <div class="card">
+      <h2>3) Exchange Google Code → Token</h2>
+      <label>Code</label>
+      <input id="code" placeholder="auto from ?code=..." />
+      <button onclick="exchangeCode()">Exchange</button>
+      <pre id="result">(await exchange)</pre>
+    </div>
+  </div>
+</body>
+</html>
+
+

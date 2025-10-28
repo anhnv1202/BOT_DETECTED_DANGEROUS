@@ -1,12 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 
 from app.database import get_db
+from app.config import get_settings
 from app.services.auth_service import AuthService
 from app.schemas.auth import UserRegister, UserLogin, Token, UserResponse, GoogleAuthRequest
 from app.middleware.auth_middleware import get_current_user_id
 
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
+settings = get_settings()
 
 
 @router.post("/register", response_model=Token, status_code=status.HTTP_201_CREATED)
@@ -51,13 +54,11 @@ async def _handle_google_auth(code: str, db: Session) -> Token:
     return Token(access_token=access_token)
 
 
-@router.get("/google/callback", response_model=Token)
-async def google_auth_callback(code: str = Query(...), db: Session = Depends(get_db)):
-    """Handle Google OAuth callback (browser redirect)"""
-    try:
-        return await _handle_google_auth(code, db)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Google authentication failed: {str(e)}")
+@router.get("/google/callback")
+async def google_auth_callback(code: str = Query(...)):
+    """Handle Google OAuth callback: redirect code to frontend APP_URL"""
+    redirect_to = f"{settings.APP_URL}/auth/callback?code={code}"
+    return RedirectResponse(url=redirect_to, status_code=302)
 
 
 @router.post("/google", response_model=Token)

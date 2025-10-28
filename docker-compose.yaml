@@ -2,14 +2,15 @@ version: '3.8'
 
 services:
   api:
-    build: .
-    container_name: dangerous-api
+    image: nvashinki/dangerous-objects-api:prod
+    container_name: xdynamic-api
     restart: unless-stopped
     ports:
-      - "8000:8000"
+      - "8001:8000"
     volumes:
       - ./data:/app/data
     env_file:
       - .env
     environment:
       - PYTHONUNBUFFERED=1
+      - DEBUG=false

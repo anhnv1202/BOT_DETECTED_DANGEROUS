@@ -1,14 +1,17 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 import httpx
 import json
 
 from app.database import get_db
 from app.services.payment_service import PaymentService
+from app.config import get_settings
 from app.schemas.payment import TopupRequest, TopupResponse
 from app.middleware.auth_middleware import get_current_user_id
 
 router = APIRouter(prefix="/api/payment", tags=["Payment"])
+settings = get_settings()
 
 
 @router.post("/topup", response_model=TopupResponse)
@@ -78,20 +81,20 @@ async def payment_success_redirect(
     transId: int = None,
     message: str = None
 ):
-    """Redirect URL sau khi user thanh toán trên MoMo"""
-    if resultCode == 0:  # Success
-        return {
-            "status": "success",
-            "message": "Thanh toán thành công! Tiền đã được nạp vào ví.",
-            "order_id": orderId,
-            "request_id": requestId,
-            "amount": amount,
-            "transaction_id": transId
-        }
-    else:
-        return {
-            "status": "failed",
-            "message": f"Thanh toán thất bại: {message or 'Unknown error'}",
-            "order_id": orderId,
-            "result_code": resultCode
-        }    
+    """Redirect URL sau khi user thanh toán trên MoMo → redirect sang FE"""
+    # Build frontend redirect URL with all useful params
+    query = {
+        "orderId": orderId,
+        "requestId": requestId,
+        "resultCode": resultCode,
+        "amount": amount,
+        "transId": transId,
+        "message": message,
+    }
+    # Remove None values
+    query_str = "&".join([
+        f"{k}={v}" for k, v in query.items() if v is not None
+    ])
+    fe_url = f"{settings.APP_URL}/payment/success"
+    redirect_to = f"{fe_url}?{query_str}" if query_str else fe_url
+    return RedirectResponse(url=redirect_to, status_code=302)

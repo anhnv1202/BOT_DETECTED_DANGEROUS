@@ -29,5 +29,7 @@ outputs/
 .env
 .env.*
 !.env.example
-README.md
+*.md
+public/
+test_client.html
 data_analysis.ipynb

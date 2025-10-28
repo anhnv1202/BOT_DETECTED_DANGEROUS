@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
+from fastapi.staticfiles import StaticFiles
 
 from app.config import get_settings
 from app.database import init_db
@@ -59,3 +60,8 @@ def root():
 def health():
     """Health check endpoint"""
     return {"status": "ok"}
+
+# Serve test HTML (simple MVC-like static)
+# Serve a simple FE for testing redirects (DEV only)
+if settings.DEBUG:
+    app.mount("/fe", StaticFiles(directory="public", html=True), name="fe")

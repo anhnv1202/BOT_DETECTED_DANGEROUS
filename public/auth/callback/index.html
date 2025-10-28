@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Auth Callback</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; margin: 32px; }
+    .wrap { max-width: 720px; margin: 0 auto; }
+    pre { background:#0b1020; color:#e5e7eb; padding:12px; border-radius:10px; overflow:auto; }
+    input { width:100%; padding:8px 10px; border:1px solid #d1d5db; border-radius:8px; }
+    button { padding:10px 14px; border-radius:8px; border:1px solid #2563eb; background:#2563eb; color:#fff; cursor:pointer; }
+  </style>
+  <script>
+    function qs() { const p=new URLSearchParams(location.search); const o={}; for (const [k,v] of p) o[k]=v; return o; }
+    function render() {
+      const params = qs();
+      document.getElementById('params').textContent = JSON.stringify(params, null, 2);
+      document.getElementById('code').value = params.code || '';
+    }
+    async function exchange() {
+      const api = (document.getElementById('api').value || 'http://localhost:8000').replace(/\/$/, '');
+      const code = document.getElementById('code').value.trim();
+      if (!code) { alert('Missing code'); return; }
+      const r = await fetch(`${api}/api/auth/google`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ code }) });
+      const data = await r.json();
+      document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+    }
+    window.addEventListener('DOMContentLoaded', render);
+  </script>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Google OAuth Callback</h1>
+    <p>This page receives <code>?code=...</code> from backend redirect and can exchange it for a token.</p>
+    <h3>Query Params</h3>
+    <pre id="params"></pre>
+    <h3>Exchange Code → Token</h3>
+    <label>Backend API Base</label>
+    <input id="api" value="http://localhost:8000" />
+    <label>Code</label>
+    <input id="code" placeholder="code" />
+    <p><button onclick="exchange()">Exchange</button></p>
+    <pre id="result">(result will appear here)</pre>
+  </div>
+</body>
+</html>
+
+
